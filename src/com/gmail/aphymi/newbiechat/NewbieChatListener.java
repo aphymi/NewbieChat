@@ -50,7 +50,7 @@ public class NewbieChatListener implements Listener {
 			return;
 		}
 		
-		if (e.getPlayer().hasPermission("newbiechat.staff") && hasRoom && e.getMessage().charAt(0) == '@') {
+		if (NewbieChat.atAdminEnabled && e.getPlayer().hasPermission("newbiechat.staff") && hasRoom && e.getMessage().charAt(0) == '@') {
 			return;
 		}
 		

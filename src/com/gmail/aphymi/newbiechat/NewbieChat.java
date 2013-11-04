@@ -5,7 +5,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class NewbieChat extends JavaPlugin {
+	protected static boolean atAdminEnabled;
 	public void onEnable() {
+		atAdminEnabled = getServer().getPluginManager().isPluginEnabled("AtAdmin");
 		getServer().getPluginManager().registerEvents(new NewbieChatListener(this), this);
 		NewbieChatExecutor executor = new NewbieChatExecutor(this);
 		getCommand("newbies").setExecutor(executor);
