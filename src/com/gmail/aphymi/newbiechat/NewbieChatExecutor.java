@@ -88,7 +88,7 @@ public class NewbieChatExecutor implements CommandExecutor {
 		}
 		Player player = (Player) sender;
 		if (!player.hasMetadata(meta)) {
-			sender.sendMessage(name + "§cYou are not in a newbie room");
+			sender.sendMessage(name + "§cYou are not in a room");
 			return true;
 		}
 		int room = player.getMetadata(meta).get(0).asInt();
@@ -136,9 +136,8 @@ public class NewbieChatExecutor implements CommandExecutor {
 		}
 		setRoom((Player)sender, newRoom);
 		setRoom(newbie, newRoom);
-		if (newbie.hasPermission("newbiechat.staff")) {
-			newbie.sendMessage(name + "§eYou have been pulled into a newbie chat room");
-		}
+		
+		newbie.sendMessage(name + "§eYou have been pulled into a chat room");
 		sender.sendMessage(String.format(name + "§eYou have pulled %s into a room.", newbie.getName()));
 		return true;
 	}
@@ -184,7 +183,8 @@ public class NewbieChatExecutor implements CommandExecutor {
 			return true;
 		}
 		setRoom(newbie, ((Player)sender).getMetadata(meta).get(0).asInt());
-		sender.sendMessage(String.format(name + "You have moved %s to your room", newbie.getName()));
+		newbie.sendMessage(name + "§eYou have been pulled into a chat room");
+		sender.sendMessage(String.format(name + "§eYou have moved %s to your room", newbie.getName()));
 		return true;
 	}
 	
