@@ -15,7 +15,6 @@ public class NewbieChatExecutor implements CommandExecutor {
 	String meta = "NewbieChatRoom";
 	public NewbieChatExecutor(NewbieChat plugin) {
 		this.plugin = plugin;
-		
 	}
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("newbies")) {
