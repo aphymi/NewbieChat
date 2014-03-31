@@ -1,11 +1,14 @@
 name: NewbieChat
 main: com.gmail.aphymi.newbiechat.NewbieChat
-version: 0.8.3
+version: 0.8.6
 
 commands:
   newbies:
     description: Shows a list of online newbies
     usage: '/newbies'
+  staff:
+    description: Shows a list of online staff
+    usage: '/staff'
   leave:
     description: Leaves newbie chat room
     usage: '/leave'
@@ -24,20 +27,41 @@ commands:
 
 
 permissions:
-  newbiechat.newbies.do:
-    description: Lets a player use /newbies
+  newbiechat.*:
+    description: Gives access to all newbiechat permissions
     default: Op
+    children:
+    - newbiechat.rooms.*
+    - newbiechat.notnewbie
+    - newbiechat.staff
+    - newbiechat.staff.do
+    - newbiechat.newbies
+    - newbiechat.chatters
+  newbiechat.rooms.*:
+    description: Gives access to all commands involving leaving/entering rooms
+    default: Op
+    children:
+    - newbiechat.rooms.join
+    - newbiechat.rooms.leave
+    - newbiechat.rooms.pullnew
+    - newbiechat.rooms.pull
   newbiechat.notnewbie:
     description: Prevents a player from showing up on /newbies
     default: Op
   newbiechat.staff:
-    description: Used to show staffers
+    description: Used to show staff in /staff
+    default: Op
+  newbiechat.newbies:
+    description: Lets a player use /newbies
+    default: Op
+  newbiechat.staff.do:
+    description: Lets a player use /staff
+    default: Op
+  newbiechat.chatters:
+    description: Lets a player use /chatters
     default: Op
   newbiechat.rooms.leave:
     description: Lets a player leave a newbie room
-    default: Op
-  newbiechat.chatters.do:
-    description: Lets a player use /chatters
     default: Op
   newbiechat.rooms.pull:
     description: Lets a player pull someone into their newbie room
