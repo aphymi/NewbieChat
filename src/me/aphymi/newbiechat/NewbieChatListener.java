@@ -52,7 +52,7 @@ public class NewbieChatListener implements Listener {
 		
 		//If staff is talking in a room and has ! as the first character of their message
 		String mainPrefix = plugin.getConfig().getString("main_prefix");
-		if (hasRoom && e.getPlayer().hasPermission("newbiechat.staff") && e.getMessage().startsWith(mainPrefix)) {
+		if (hasRoom && e.getPlayer().hasPermission("newbiechat.staffmember") && e.getMessage().startsWith(mainPrefix)) {
 			e.setMessage(e.getMessage().replaceFirst(Pattern.quote(mainPrefix), ""));
 			hasRoom = false;
 		}
@@ -63,7 +63,7 @@ public class NewbieChatListener implements Listener {
 			//Player is in a chat room
 			if (playerHasRoom) {
 				//Player is not staff
-				if (!player.hasPermission("newbiechat.staff")) {
+				if (!player.hasPermission("newbiechat.staffmember")) {
 					//Event is from main chat OR event is from someone in a different chat room
 					if (!hasRoom || room != playerRoom) {
 						e.getRecipients().remove(player);
@@ -125,7 +125,7 @@ public class NewbieChatListener implements Listener {
 		Plugin plugin = Bukkit.getPluginManager().getPlugin("NewbieChat");
 		p.removeMetadata(meta, plugin);
 		for (Player player: Bukkit.getOnlinePlayers()) {
-			if (player.hasMetadata(meta) && player.getMetadata(meta).get(0).asInt() == room && player.hasPermission("newbiechat.staff")) {
+			if (player.hasMetadata(meta) && player.getMetadata(meta).get(0).asInt() == room && player.hasPermission("newbiechat.staffmember")) {
 				roomHasStaff = true;
 				break;
 			}

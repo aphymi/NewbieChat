@@ -78,13 +78,13 @@ public class NewbieChatExecutor implements CommandExecutor {
 	}
 	
 	private boolean staff(CommandSender sender, Command cmd, String[] args) {
-		if (!sender.hasPermission("newbiechat.staff.command")) {
+		if (!sender.hasPermission("newbiechat.staff")) {
 			sender.sendMessage(noPerms);
 			return true;
 		}
 		ArrayList<String> staffList = new ArrayList<String>();
 		for (Player player: Bukkit.getOnlinePlayers()) {
-			if (player.hasPermission("newbiechat.staff")) {
+			if (player.hasPermission("newbiechat.staffmember")) {
 				staffList.add(player.getName());
 			}
 		}

@@ -16,7 +16,7 @@ commands:
   staff:
     description: Show a list of online staff.
     usage: '/staff'
-    permission: 'newbiechat.staff.command'
+    permission: 'newbiechat.staff'
   chatters:
     description: Display players in newbie chat rooms.
     usage: '/chatters'
@@ -44,8 +44,8 @@ permissions:
     default: Op
     children:
     - newbiechat.notnewbie
+    - newbiechat.staffmember
     - newbiechat.staff
-    - newbiechat.staff.do
     - newbiechat.newbies
     - newbiechat.chatters
     - newbiechat.reload
@@ -61,7 +61,7 @@ permissions:
   newbiechat.notnewbie:
     description: Tells NewbieChat that this player isn't a newbie.
     default: Op
-  newbiechat.staff:
+  newbiechat.staffmember:
     description: Used to show staff in /staff
     default: Op
   newbiechat.reload:
@@ -70,7 +70,7 @@ permissions:
   newbiechat.newbies:
     description: Let a player use /newbies
     default: Op
-  newbiechat.staff.do:
+  newbiechat.staff:
     description: Let a player use /staff
     default: Op
   newbiechat.chatters:
