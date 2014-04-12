@@ -1,0 +1,18 @@
+#Chat format that staff will see from someone in a chat room
+#Use {VARIABLE_NAME} to put name, message, etc. into the chat format
+#Variables:
+#  MESSAGE - Message that was sent
+#  NAME - Username of the user that sent the message
+#  DNAME - Display name of the user that sent the message.
+#
+#Default: '§9[§eNewbieChat§9] §f<§8{NAME}§f> §a{MESSAGE}'
+format: '§9[§eNewbieChat§9] §f<§8{NAME}§f> §a{MESSAGE}'
+
+#Prefix staff uses to talk in main chat from a chat room
+main_prefix: '!'
+
+#Prevent newbies from being damaged
+block_newbie_damage: true
+
+#Prevent newbies from getting hungry
+block_newbie_hunger: true

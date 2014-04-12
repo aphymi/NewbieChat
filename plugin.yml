@@ -1,74 +1,90 @@
 name: NewbieChat
-main: com.gmail.aphymi.newbiechat.NewbieChat
-version: 0.8.6
+version: 1.0.0
+description: Provides chat rooms for staff to help new players join the server.
+author: Pandomy
+main: me.aphymi.newbiechat.NewbieChat
 
 commands:
+  ncreload:
+    description: Reload the NewbieChat configuration.
+    usage: '/ncreload'
+    permission: 'newbiechat.reload'
   newbies:
-    description: Shows a list of online newbies
+    description: Show a list of online newbies.
     usage: '/newbies'
+    permission: 'newbiechat.newbies'
   staff:
-    description: Shows a list of online staff
+    description: Show a list of online staff.
     usage: '/staff'
-  leave:
-    description: Leaves newbie chat room
-    usage: '/leave'
-  pullnew:
-    description: Pulls the sender and specified newbie into a chat room
-    usage: '/pullnew <username>'
-  pull:
-    description: Pulls a player to the sender's chat room
-    usage: '/pull <username>'
+    permission: 'newbiechat.staff.command'
   chatters:
-    description: Displays players in newbie chat rooms
+    description: Display players in newbie chat rooms.
     usage: '/chatters'
+    permission: 'newbiechat.chatters'
+  pullnew:
+    description: Pull the sender and specified newbie into a chat room.
+    usage: '/pullnew <username>'
+    permission: 'newbiechat.rooms.pullnew'
+  pull:
+    description: Pull a player to the sender's chat room.
+    usage: '/pull <username>'
+    permission: 'newbiechat.rooms.pull'
   join:
-    description: Joins a specific room
+    description: Join a specific room.
     usage: '/join <room number>'
-
+    permission: 'newbiechat.rooms.join'
+  leave:
+    description: Leave newbie chat room.
+    usage: '/leave'
+    permission: 'newbiechat.rooms.leave'
 
 permissions:
   newbiechat.*:
-    description: Gives access to all newbiechat permissions
+    description: Give access to all NewbieChat permissions.
     default: Op
     children:
-    - newbiechat.rooms.*
     - newbiechat.notnewbie
     - newbiechat.staff
     - newbiechat.staff.do
     - newbiechat.newbies
     - newbiechat.chatters
+    - newbiechat.reload
+    - newbiechat.rooms.*
   newbiechat.rooms.*:
-    description: Gives access to all commands involving leaving/entering rooms
+    description: Give access to all commands involving leaving/entering rooms.
     default: Op
     children:
-    - newbiechat.rooms.join
-    - newbiechat.rooms.leave
     - newbiechat.rooms.pullnew
     - newbiechat.rooms.pull
+    - newbiechat.rooms.join
+    - newbiechat.rooms.leave
   newbiechat.notnewbie:
-    description: Prevents a player from showing up on /newbies
+    description: Tells NewbieChat that this player isn't a newbie.
     default: Op
   newbiechat.staff:
     description: Used to show staff in /staff
     default: Op
+  newbiechat.reload:
+    description: Let a player use /ncreload
+    default: Op
   newbiechat.newbies:
-    description: Lets a player use /newbies
+    description: Let a player use /newbies
     default: Op
   newbiechat.staff.do:
-    description: Lets a player use /staff
+    description: Let a player use /staff
     default: Op
   newbiechat.chatters:
-    description: Lets a player use /chatters
-    default: Op
-  newbiechat.rooms.leave:
-    description: Lets a player leave a newbie room
-    default: Op
-  newbiechat.rooms.pull:
-    description: Lets a player pull someone into their newbie room
+    description: Let a player use /chatters
     default: Op
   newbiechat.rooms.pullnew:
-    description: Lets a player create a new newbie room and pull themselves and someone else into it
+    description: Let a player create a new newbie room and pull themselves and someone else into it
+    default: Op
+  newbiechat.rooms.pull:
+    description: Let a player pull someone into their newbie room
     default: Op
   newbiechat.rooms.join:
-    description: Lets a user join a specified room
+    description: Let a user join a specific room
+    default: Op
+  newbiechat.rooms.leave:
+    description: Let a player leave a newbie room
     default: Op

@@ -1,7 +1,13 @@
 package me.aphymi.newbiechat;
 
-import java.util.ArrayList;
+import static me.aphymi.newbiechat.NewbieChat.name;
+import static me.aphymi.newbiechat.NewbieChat.nameErr;
+import static me.aphymi.newbiechat.NewbieChatListener.leaveRoom;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -10,129 +16,150 @@ import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 
 public class NewbieChatExecutor implements CommandExecutor {
+	public static final String noPerms = nameErr + "You don't have permission for that.";
+	public static final String notPlayer = nameErr + "You need to be a player to do that!";
+	protected static final String meta = "newbiechat_room";
 	private NewbieChat plugin;
-	String name = "§b[§eNC§b] ";
-	String meta = "NewbieChatRoom";
+	
 	public NewbieChatExecutor(NewbieChat plugin) {
 		this.plugin = plugin;
 	}
+	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (cmd.getName().equalsIgnoreCase("newbies")) {
-			return newbies(sender, cmd, args);
-		}
-		if (cmd.getName().equalsIgnoreCase("staff")) {
-			return staff(sender, cmd, args);
-		}
-		if (cmd.getName().equalsIgnoreCase("leave")) {
-			return leave(sender, cmd, args);
-		}
-		if (cmd.getName().equalsIgnoreCase("pullnew")) {
-			return pullNew(sender, cmd, args);
-		}
-		if (cmd.getName().equalsIgnoreCase("pull")) {
-			return pull(sender, cmd, args);
-		}
-		if (cmd.getName().equalsIgnoreCase("chatters")) {
-			return chatters(sender, cmd, args);
-		}
-		if (cmd.getName().equalsIgnoreCase("join")) {
-			return join(sender, cmd, args);
+		switch (cmd.getName().toLowerCase()) {
+			case "ncreload":
+				return reload(sender, cmd, args);
+			case "newbies":
+				return newbies(sender, cmd, args);
+			case "staff":
+				return staff(sender, cmd, args);
+			case "chatters":
+				return chatters(sender, cmd, args);
+			case "pullnew":
+				return pullNew(sender, cmd, args);
+			case "pull":
+				return pull(sender, cmd, args);
+			case "join":
+				return join(sender, cmd, args);
+			case "leave":
+				return leave(sender, cmd, args);
 		}
 		return false;
 	}
 	
-	private boolean newbies(CommandSender sender, Command cmd, String[] args) {
-		if (!sender.hasPermission("newbiechat.newbies.do")) {
-			sender.sendMessage(name + "§cYou don't have permission to do that");
+	private boolean reload(CommandSender sender, Command cmd, String[] args) {
+		if (!sender.hasPermission("newbiechat.reload")) {
+			sender.sendMessage(noPerms);
 			return true;
 		}
-		ArrayList<Player> newbieList = new ArrayList<Player>();
-		for (Player player: Bukkit.getServer().getOnlinePlayers()) {
+		plugin.reloadConfig();
+		sender.sendMessage(name + "Configuration reloaded.");
+		return true;
+	}
+	
+	private boolean newbies(CommandSender sender, Command cmd, String[] args) {
+		if (!sender.hasPermission("newbiechat.newbies")) {
+			sender.sendMessage(noPerms);
+			return true;
+		}
+		ArrayList<String> newbieList = new ArrayList<String>();
+		for (Player player: Bukkit.getOnlinePlayers()) {
 			if (!(player.hasPermission("newbiechat.notnewbie"))) {
-				newbieList.add(player);
+				newbieList.add(player.getName());
 			}
 		}
 		if (newbieList.size() == 0) {
-			sender.sendMessage(name + "§cThere are no newbies online");
+			sender.sendMessage(name + "There are no newbies online");
 			return true;
 		}
-		StringBuilder sb = new StringBuilder();
-		for (Player player: newbieList) {
-			sb.append(player.getName() + ", ");
-		}
-		sender.sendMessage(name + "§eOnline newbies: " + sb.toString().substring(0, sb.toString().length() - 2));
+		sender.sendMessage(name + String.format("There are %s online newbies: %s",
+				newbieList.size(), StringUtils.join(newbieList, ", ")));
 		return true;
 	}
 	
 	private boolean staff(CommandSender sender, Command cmd, String[] args) {
-		if (!sender.hasPermission("newbiechat.staff.do")) {
-			sender.sendMessage(name + "§cYou don't have permission to do that");
+		if (!sender.hasPermission("newbiechat.staff.command")) {
+			sender.sendMessage(noPerms);
 			return true;
 		}
-		ArrayList<Player> staffList = new ArrayList<Player>();
-		for (Player player: Bukkit.getServer().getOnlinePlayers()) {
+		ArrayList<String> staffList = new ArrayList<String>();
+		for (Player player: Bukkit.getOnlinePlayers()) {
 			if (player.hasPermission("newbiechat.staff")) {
-				staffList.add(player);
+				staffList.add(player.getName());
 			}
 		}
 		if (staffList.size() == 0) {
-			sender.sendMessage(name + "§cThere is no staff online");
+			sender.sendMessage(name + "There are no staff online.");
 			return true;
 		}
-		StringBuilder sb = new StringBuilder();
-		for (Player player: staffList) {
-			sb.append(player.getName() + ", ");
+		sender.sendMessage(name + String.format("There are %s online staff: %s",
+				staffList.size(), StringUtils.join(staffList, ", ")));
+		return true;
+	}
+	
+	private boolean chatters(CommandSender sender, Command cmd, String[] args) {
+		if (!sender.hasPermission("newbiechat.chatters")) {
+			sender.sendMessage(noPerms);
+			return true;
 		}
-		sender.sendMessage(name + "§eOnline staff: " + sb.toString().substring(0, sb.toString().length() - 2));
+		HashMap<Integer, ArrayList<String>> chatterList = new HashMap<Integer, ArrayList<String>>();
+		for (Player player: Bukkit.getOnlinePlayers()) {
+			if (player.hasMetadata(meta)) {
+				int room = player.getMetadata(meta).get(0).asInt();
+				if (!chatterList.containsKey(room)) {
+					chatterList.put(room, new ArrayList<String>());
+				}
+				chatterList.get(room).add(player.getName());
+			}
+		}
+		if (chatterList.isEmpty()) {
+			sender.sendMessage(name + "No one is currently in a chat room.");
+			return true;
+		}
+		ArrayList<String> lines = new ArrayList<String>();
+		for (Integer room: chatterList.keySet()) {
+			lines.add(String.format(
+				"§eRoom %s: §f%s", room,
+				StringUtils.join(chatterList.get(room), ", ")
+			));
+		}
+		sender.sendMessage(StringUtils.join(lines, "\n"));
 		return true;
 	}
 	
 	
 	private int getFreeRoom() {
-		boolean a = true;
 		int freeRoom = 0;
-		while (a) {
-			a = false;
-			for (Player player: Bukkit.getServer().getOnlinePlayers()) {
+		
+		outer:
+		while (true) {
+			for (Player player: Bukkit.getOnlinePlayers()) {
 				if (player.hasMetadata(meta) && player.getMetadata(meta).get(0).asInt() == freeRoom) {
-					a = true;
 					freeRoom++;
+					continue outer;
 				}
 			}
+			break;
 		}
 		return freeRoom;
 	}
 	
 	private boolean leave(CommandSender sender, Command cmd, String[] args) {
 		if (!sender.hasPermission("newbiechat.rooms.leave")) {
-			sender.sendMessage(name + "§cYou don't have permission to do that");
+			sender.sendMessage(noPerms);
 			return true;
 		}
 		if (!(sender instanceof Player)) {
-			sender.sendMessage(name + "§cYou must be a player to do that");
+			sender.sendMessage(notPlayer);
 			return true;
 		}
 		Player player = (Player) sender;
 		if (!player.hasMetadata(meta)) {
-			sender.sendMessage(name + "§cYou are not in a room");
+			sender.sendMessage(nameErr + "You are not in a room.");
 			return true;
 		}
-		int room = player.getMetadata(meta).get(0).asInt();
-		player.removeMetadata(meta, plugin);
-		boolean isStaff = false;
-		for (Player onlinePlayer: Bukkit.getServer().getOnlinePlayers()) {
-			if (onlinePlayer.hasMetadata(meta) && onlinePlayer.hasPermission("newbiechat.staff") && (onlinePlayer.getMetadata(meta).get(0).asInt() == room)) {
-				isStaff = true;
-			}
-		}
-		if (!isStaff) {
-			for (Player onlinePlayer: Bukkit.getServer().getOnlinePlayers()) {
-				if (onlinePlayer.hasMetadata(meta) && onlinePlayer.getMetadata(meta).get(0).asInt() == room) {
-					onlinePlayer.removeMetadata(meta, plugin);
-				}
-			}
-		}
-		player.sendMessage(name + "§eYou are now talking in main chat");
+		leaveRoom(player);
+		player.sendMessage(name + "You are now talking in main chat.");
 		return true;
 	}
 	
@@ -143,160 +170,98 @@ public class NewbieChatExecutor implements CommandExecutor {
 	//Join a new room and pull a newbie into that room
 	private boolean pullNew(CommandSender sender, Command cmd, String[] args) {
 		if (!(sender instanceof Player)) {
-			sender.sendMessage(name + "§cYou must be a player to do that");
+			sender.sendMessage(notPlayer);
 			return true;
 		}
 		Player player = (Player) sender;
 		if (!sender.hasPermission("newbiechat.rooms.pullnew")) {
-			sender.sendMessage(name + "§cYou don't have permission to do that");
+			sender.sendMessage(noPerms);
 			return true;
 		}
 		int newRoom = getFreeRoom();
 		if (args.length == 0) {
-			sender.sendMessage(name + "§cYou must specify a username");
+			sender.sendMessage(nameErr + "You must specify a username.");
 			return true;
 		}
-		Player newbie = Bukkit.getServer().getPlayer(args[0]);
+		Player newbie = Bukkit.getPlayer(args[0]);
 		if (newbie == null) {
-			sender.sendMessage(name + "§cThat player is not online/doesn't exist!");
+			sender.sendMessage(nameErr + "That player is not online/doesn't exist!");
 			return true;
 		}
 		if (player.hasMetadata(meta)) {
-			NewbieChatListener.leaveRoom(player);
+			leaveRoom(player);
 		}
 		setRoom(player, newRoom);
 		setRoom(newbie, newRoom);
 		
-		newbie.sendMessage(name + "§eYou have been pulled into a chat room");
-		sender.sendMessage(String.format(name + "§eYou have pulled %s into a room.", newbie.getName()));
+		newbie.sendMessage(name + "You have been pulled into a chat room.");
+		sender.sendMessage(name + String.format("You have pulled %s into a room.", newbie.getName()));
 		return true;
 	}
 	
 	private boolean pull(CommandSender sender, Command cmd, String[] args) {
-		if (!(sender instanceof Player)) {
-			if (args.length == 0) {
-				sender.sendMessage(name + "§cYou must specify a player!");
-				return true;
-			}
-			Player newbie = Bukkit.getServer().getPlayer(args[0]);
-			if (newbie == null) {
-				sender.sendMessage(name + "§cPlayer not found!");
-				return true;
-			}
-			if (!newbie.hasMetadata(meta)) {
-				sender.sendMessage(name + "§cThat player is already in main chat");
-				return true;
-			}
-			newbie.removeMetadata(meta, plugin);
-			return true;
-		}
 		if (!sender.hasPermission("newbiechat.rooms.pull")) {
-			sender.sendMessage(name + "§cYou don't have permission for that");
+			sender.sendMessage(noPerms);
 			return true;
 		}
 		if (args.length == 0) {
-			sender.sendMessage(name + "§cYou must specify a username");
+			sender.sendMessage(nameErr + "You must specify a player!");
 			return true;
 		}
-		Player newbie = Bukkit.getServer().getPlayer(args[0]);
+		boolean inRoom;
+		if ((sender instanceof Player)) {
+			Player player = (Player) sender;
+			inRoom = player.hasMetadata(meta);
+		} else {
+			inRoom = false;
+		}
+		Player newbie = Bukkit.getPlayer(args[0]);
 		if (newbie == null) {
-			sender.sendMessage(name + "§cPlayer not found!");
+			sender.sendMessage(nameErr + "Player not found!");
 			return true;
 		}
-		if (!((Player)sender).hasMetadata(meta)) {
+		if (!inRoom) {
 			if (!newbie.hasMetadata(meta)) {
-				sender.sendMessage(name + "§cThat person is already in main chat");
+				sender.sendMessage(nameErr + "That player is already in main chat.");
 				return true;
 			}
-			sender.sendMessage(String.format(name + "§eYou have moved %s to main chat", newbie.getName()));
 			newbie.removeMetadata(meta, plugin);
+			newbie.sendMessage(name + "You have been pulled into main chat.");
+			sender.sendMessage(String.format("You have pulled %s into main chat.", args[0]));
 			return true;
 		}
 		setRoom(newbie, ((Player)sender).getMetadata(meta).get(0).asInt());
-		newbie.sendMessage(name + "§eYou have been pulled into a chat room");
-		sender.sendMessage(String.format(name + "§eYou have moved %s to your room", newbie.getName()));
-		return true;
-	}
-	
-	@SuppressWarnings({"unchecked", "rawtypes" })
-	private boolean chatters(CommandSender sender, Command cmd, String[] args) {
-		if (!sender.hasPermission("newbiechat.chatters.do")) {
-			sender.sendMessage(name + "§cYou don't have permission to do that");
-			return true;
-		}
-		Player[] players = Bukkit.getServer().getOnlinePlayers();
-		int maxchat = -1;
-		for (Player player: players) {
-			if (player.hasMetadata(meta) && (player.getMetadata(meta).get(0).asInt() > maxchat)) {
-				maxchat = player.getMetadata(meta).get(0).asInt();
-			}
-		}
-		if (maxchat == -1) {
-			sender.sendMessage(name + "§eNo one is in a room");
-			return true;
-		}
-		ArrayList[] chatterlist = new ArrayList[maxchat + 1];
-		for (int i = 0; i < chatterlist.length; i++) {
-			chatterlist[i] = new ArrayList();
-			for (Player player: players) {
-				if (player.hasMetadata(meta) && player.getMetadata(meta).get(0).asInt() == i) {
-					chatterlist[i].add(player.getName());
-				}
-			}
-		}
-		for (int i = 0; i < chatterlist.length; i++) {
-			String send = "";
-			if (chatterlist[i].size() == 0) {
-				continue;
-			}
-			send += "§eRoom " + i + ": §f";
-			for (int j = 0; j < chatterlist[i].size(); j++) {
-				send += chatterlist[i].get(j) + ", ";
-			}
-			send = send.substring(0, send.length() - 2);
-			sender.sendMessage(send);
-		}
+		newbie.sendMessage(name + "You have been pulled into a chat room.");
+		sender.sendMessage(name + String.format("You have moved %s to your room.", newbie.getName()));
 		return true;
 	}
 	
 	private boolean join(CommandSender sender, Command cmd, String[] args) {
 		if (!(sender instanceof Player)) {
-			sender.sendMessage(name + "§cYou must be a player to do that!");
+			sender.sendMessage(notPlayer);
 			return true;
 		}
 		if (!sender.hasPermission("newbiechat.rooms.join")) {
-			sender.sendMessage(name + "§cYou don't have permission to do that");
+			sender.sendMessage(noPerms);
 			return true;
 		}
 		if (args.length == 0) {
-			sender.sendMessage(name + "§cYou must specify a room");
+			sender.sendMessage(nameErr + "You must specify a room.");
 			return true;
 		}
+		int room;
 		try {
-			Integer.parseInt(args[0]);
+			room = Integer.parseInt(args[0]);
 		} catch(NumberFormatException ex) {
-			sender.sendMessage(name + "§cThe room must be a number");
+			sender.sendMessage(nameErr + "The room must be a number.");
 			return true;
 		}
-		if (((Player)sender).hasMetadata(meta)) {
-			boolean isStaff = false;
-			int room = ((Player)sender).getMetadata(meta).get(0).asInt();
-			for (Player play: Bukkit.getServer().getOnlinePlayers()) {
-				if (play.hasMetadata(meta) && play.getMetadata(meta).get(0).asInt() == room && play.hasPermission("newbiechat.staff")) {
-					isStaff = true;
-					break;
-				}
-			}
-			if (!isStaff) {
-				for (Player play: Bukkit.getServer().getOnlinePlayers()) {
-					if (play.hasMetadata(meta) && play.getMetadata(meta).get(0).asInt() == room) {
-						play.removeMetadata(meta, plugin);
-					}
-				}
-			}
+		Player player = (Player) sender;
+		if (player.hasMetadata(meta)) {
+			leaveRoom(player);
 		}
-		setRoom((Player) sender, Integer.parseInt(args[0]));
-		sender.sendMessage(name + "You have joined room " + args[0]);
+		setRoom(player, room);
+		sender.sendMessage(name + String.format("You have joined room %s.", args[0]));
 		return true;
 	}
 }
