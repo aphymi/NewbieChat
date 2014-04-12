@@ -1,4 +1,4 @@
-package com.gmail.aphymi.newbiechat;
+package me.aphymi.newbiechat;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

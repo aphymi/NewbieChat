@@ -1,4 +1,4 @@
-package com.gmail.aphymi.newbiechat;
+package me.aphymi.newbiechat;
 
 import java.util.ArrayList;
 

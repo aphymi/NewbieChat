@@ -1,4 +1,4 @@
-package com.gmail.aphymi.newbiechat;
+package me.aphymi.newbiechat;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -14,23 +14,29 @@ import org.bukkit.plugin.Plugin;
 
 public class NewbieChatListener implements Listener {
 	static final String meta = "NewbieChatRoom";
+	private Plugin plugin;
+	
+	public NewbieChatListener(Plugin plugin) {
+		this.plugin = plugin;
+	}
+	
 	@EventHandler
 	public void onPlayerChat(AsyncPlayerChatEvent e) {
 		/*
-		 * NEWBIE CHAT RULES
-		 * Newbies/Members in any room do not receive normal chat
-		 * Newbies/Members receive chat from anyone else in their room as normal chat
-		 * Newbies/Members do not receive chat from those in other rooms
+		 * NON-STAFF CHAT RULES
+		 * Non-staff in any room do not receive normal chat
+		 * Non-staff receive chat from anyone else in their room as normal chat
+		 * Non-staff do not receive chat from those in other rooms
 		 * 
 		 * STAFF CHAT RULES
-		 * Staff receives chat from newbies in their room as [NewbieChat] <Username> message
-		 * Staff receives chat from other staff in their room as ^
-		 * Staff talks in newbie chat rooms just by normally talking
+		 * Staff receives formatted chat from newbies in their room
+		 * Staff receives formatted chat from other staff in their room
+		 * Staff talk in newbie chat rooms with normal messaging
 		 * Staff can talk in main chat by using ! before their message
 		 * Staff cannot see chat in other rooms
 		 * 
 		 * GLOBAL CHAT RULES
-		 * Normal chat members cannot see newbie chat
+		 * People not in a room cannot see newbie chat
 		 * 
 		 */
 		
@@ -39,9 +45,8 @@ public class NewbieChatListener implements Listener {
 		boolean hasRoom = e.getPlayer().hasMetadata(meta);
 		int room = hasRoom ? e.getPlayer().getMetadata(meta).get(0).asInt() : -1;
 		
-		
 		//If staff is talking in a room and has ! as the first character of their message
-		if (e.getPlayer().hasPermission("newbiechat.staff") && hasRoom && e.getMessage().charAt(0) == '!') {
+		if (hasRoom && e.getPlayer().hasPermission("newbiechat.staff") && e.getMessage().charAt(0) == '!') {
 			e.setMessage(e.getMessage().replaceFirst("!", ""));
 			for (Player player: Bukkit.getServer().getOnlinePlayers()) {
 				if (!player.hasPermission("newbiechat.staff") && player.hasMetadata(meta) && player.getMetadata(meta).get(0).asInt() == room) {
@@ -51,40 +56,38 @@ public class NewbieChatListener implements Listener {
 			return;
 		}
 		
-		//SET NEWBIE CHAT RULES
 		for (Player player: Bukkit.getServer().getOnlinePlayers()) {
 			boolean playerHasRoom = player.hasMetadata(meta);
 			int playerRoom = playerHasRoom ? player.getMetadata(meta).get(0).asInt() : -1;
-			//Player is in a newbie chat room
+			//Player is in a chat room
 			if (playerHasRoom) {
-				//Player is a newbie or member
+				//Player is not staff
 				if (!player.hasPermission("newbiechat.staff")) {
-					//Chat is from normal chat
-					if (!hasRoom) {
-						e.getRecipients().remove(player);
-					//Chat is from someone else in a different chat room
-					} else if (room != playerRoom) {
+					//Event is from main chat OR event is from someone in a different chat room
+					if (!hasRoom || room != playerRoom) {
 						e.getRecipients().remove(player);
 					}
 				}
-				//SET STAFF CHAT RULES
-				//Player is staff and is in a chat room
-				else if (playerHasRoom && player.hasPermission("newbiechat.staff")) {
-					//The event source player is in the same chatroom as this staff
-					if (hasRoom && (room == playerRoom)) {
-						e.getRecipients().remove(player);
-						player.sendMessage("§9[§eNewbieChat§9] §f<§8" + e.getPlayer().getName() + "§f> §9" + e.getMessage());
-					}
-					//The event source is in a different chatroom than this staff
-					if (hasRoom && (room != playerRoom)) {
-						e.getRecipients().remove(player);
+				//Player is staff
+				else {
+					//The event player is in a chat room
+					if (hasRoom) {
+						//The event player is in the same chat room as this staff
+						if (room == playerRoom) {
+							e.getRecipients().remove(player);
+							//TODO Replace this with the format from config.yml
+							player.sendMessage("§9[§eNewbieChat§9] §f<§8" + e.getPlayer().getName() + "§f> §9" + e.getMessage());
+						}
+						//The event player is in a different chat room than this staff
+						else {
+							e.getRecipients().remove(player);
+						}
 					}
 				}
 			}
-			//SET GLOBAL RULES
-			//Player is in global chat and chat source player is not
+			//Player is in global chat and event player is not
 			else if (hasRoom && !playerHasRoom) {
-					e.getRecipients().remove(player);
+				e.getRecipients().remove(player);
 			}
 		}
 	}
@@ -102,25 +105,26 @@ public class NewbieChatListener implements Listener {
 			leaveRoom(e.getPlayer());
 		}
 	}
-	
+	/*
+	 * Removes player p from the room, flushing everyone from the
+	 * room if there aren't any staff remaining in it.
+	 */
 	protected static void leaveRoom(Player p) {
-		boolean isStaff = false;
+		boolean roomHasStaff = false;
 		int room = p.getMetadata(meta).get(0).asInt();
 		Plugin plugin = Bukkit.getPluginManager().getPlugin("NewbieChat");
 		p.removeMetadata(meta, plugin);
-		for (Player play: Bukkit.getServer().getOnlinePlayers()) {
-			if (play.hasMetadata(meta) && play.getMetadata(meta).get(0).asInt() == room && play.hasPermission("newbiechat.staff")) {
-				isStaff = true;
+		for (Player player: Bukkit.getServer().getOnlinePlayers()) {
+			if (player.hasMetadata(meta) && player.getMetadata(meta).get(0).asInt() == room && player.hasPermission("newbiechat.staff")) {
+				roomHasStaff = true;
 				break;
 			}
 		}
-		if (!isStaff) {
-			for (Player play: Bukkit.getServer().getOnlinePlayers()) {
-				if (play.hasMetadata(meta) && play.getMetadata(meta).get(0).asInt() == room) {
-					play.removeMetadata(meta, plugin);
+		if (!roomHasStaff) {
+			for (Player player: Bukkit.getServer().getOnlinePlayers()) {
+				if (player.hasMetadata(meta) && player.getMetadata(meta).get(0).asInt() == room) {
+					player.removeMetadata(meta, plugin);
 				}
-			
-			
 			}
 		}
 	}
@@ -128,7 +132,7 @@ public class NewbieChatListener implements Listener {
 	
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent e) {
-		if (e.getEntity() instanceof Player) {
+		if (plugin.getConfig().getBoolean("block_newbie_damage") && e.getEntity() instanceof Player) {
 			Player player = (Player) e.getEntity();
 			if (!player.hasPermission("newbiechat.notnewbie")) {
 				e.setCancelled(true);
@@ -138,7 +142,7 @@ public class NewbieChatListener implements Listener {
 	
 	@EventHandler
 	public void onFoodLevelChange(FoodLevelChangeEvent e) {
-		if (e.getEntity() instanceof Player) {
+		if (plugin.getConfig().getBoolean("block_newbie_hunger") && e.getEntity() instanceof Player) {
 			Player player = (Player) e.getEntity();
 			if (!player.hasPermission("newbiechat.notnewbie")) {
 				e.setCancelled(true);
