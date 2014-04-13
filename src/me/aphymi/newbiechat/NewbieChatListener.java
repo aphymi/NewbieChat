@@ -86,7 +86,7 @@ public class NewbieChatListener implements Listener {
 							vars.put("NAME", e.getPlayer().getName());
 							vars.put("DNAME", e.getPlayer().getDisplayName());
 							
-							String format = plugin.getConfig().getString("format");
+							String format = plugin.getConfig().getString("format").replace("&", "§");
 							for (String var: vars.keySet()) {
 								format = format.replace("{" + var + "}", vars.get(var));
 							}

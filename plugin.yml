@@ -1,5 +1,5 @@
 name: NewbieChat
-version: 1.0.0
+version: 1.0.1
 description: Provides chat rooms for staff to help new players join the server.
 author: Pandomy
 main: me.aphymi.newbiechat.NewbieChat
