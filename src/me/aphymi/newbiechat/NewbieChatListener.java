@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2014 Amelia Winters
+ * See the file license.txt.
+ */
 package me.aphymi.newbiechat;
 
 import static me.aphymi.newbiechat.NewbieChat.name;
