@@ -1,6 +1,8 @@
 NewbieChat
 ==========
-####This plugin is intended to assist servers where new members need to go through some process with staff. It lets staff pull newbies into separate chat rooms where those newbies cannot see main chat, while staff can.
+####This Bukkit plugin is intended to assist servers where new members need to go through some process with staff. It lets staff pull newbies into separate chat rooms where those newbies cannot see main chat, while staff can.
+
+This plugin is on [Bukkit Dev](http://dev.bukkit.org/bukkit-plugins/newbiechat/pages/main/).
 
 A "newbie" is someone without the 'newbiechat.notnewbie' permission.
 They show up on /newbies.
